@@ -63,7 +63,10 @@ class _UploadPodcastState extends State<UploadPodcast> {
             children: [
               const UploadThumbnail(),
               SizedBox(height: 30.h),
-              const UploadTextfield(hinttext: "Pick a Podcast"),
+              const UploadTextfield(
+                hinttext: "Pick a Podcast",
+                isAudio: true,
+              ),
               SizedBox(height: 30.h),
               const UploadTextfield(hinttext: "Author"),
               SizedBox(height: 30.h),
@@ -73,8 +76,8 @@ class _UploadPodcastState extends State<UploadPodcast> {
                 elevation: 2,
                 child: Container(
                   decoration: BoxDecoration(
-                    color: AppColors
-                        .darkBackgroundColor, // Custom background color
+                    color: const Color.fromARGB(
+                        255, 54, 51, 51), // Custom background color
                     borderRadius: BorderRadius.circular(12),
                   ),
                   padding:

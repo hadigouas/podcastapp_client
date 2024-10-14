@@ -33,17 +33,20 @@ class _UploadThumbnailState extends State<UploadThumbnail> {
       onTap: _pickImage,
       child: Container(
         width: MediaQuery.of(context).size.width,
-        height: 100.h,
+        height: _thumbnailPath == null ? 100.h : 200.h,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
-          border: RDottedLineBorder.all(
-            width: 1,
-            color: AppColors.darkTextSecondaryColor,
-          ),
+          border: _thumbnailPath == null
+              ? RDottedLineBorder.all(
+                  width: 1,
+                  color: AppColors.darkTextSecondaryColor,
+                )
+              : null,
           image: _thumbnailPath != null
               ? DecorationImage(
                   image: FileImage(File(_thumbnailPath!)),
                   fit: BoxFit.cover,
+                  alignment: Alignment.center,
                 )
               : null,
         ),
@@ -63,7 +66,19 @@ class _UploadThumbnailState extends State<UploadThumbnail> {
                   ],
                 ),
               )
-            : null,
+            : Align(
+                alignment: Alignment.bottomRight,
+                child: IconButton(
+                    onPressed: () {
+                      setState(() {
+                        _thumbnailPath = null;
+                      });
+                    },
+                    icon: const Icon(
+                      Icons.delete,
+                      color: Colors.red,
+                    )),
+              ),
       ),
     );
   }

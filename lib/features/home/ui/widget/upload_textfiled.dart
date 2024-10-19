@@ -6,20 +6,24 @@ import 'package:flutter_application_3/core/theme/textstyle.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class UploadTextfield extends StatefulWidget {
+  final String hinttext;
+  final bool isAudio;
+  final TextEditingController controller;
+  final Function(String?)? onAudioPathChanged;
+
   const UploadTextfield({
     super.key,
     required this.hinttext,
     this.isAudio = false,
+    required this.controller,
+    this.onAudioPathChanged,
   });
-  final String hinttext;
-  final bool isAudio;
 
   @override
   _UploadTextfieldState createState() => _UploadTextfieldState();
 }
 
 class _UploadTextfieldState extends State<UploadTextfield> {
-  final TextEditingController _controller = TextEditingController();
   String? _audioFilePath;
   PlayerController? _playerController;
   bool _isPlaying = false;
@@ -41,7 +45,7 @@ class _UploadTextfieldState extends State<UploadTextfield> {
       if (result != null) {
         setState(() {
           _audioFilePath = result.files.single.path;
-          _controller.text = result.files.single.name;
+          widget.controller.text = result.files.single.name;
         });
         if (_playerController != null && _audioFilePath != null) {
           await _playerController!.preparePlayer(
@@ -51,6 +55,7 @@ class _UploadTextfieldState extends State<UploadTextfield> {
             volume: 1.0,
           );
         }
+        widget.onAudioPathChanged?.call(_audioFilePath);
       } else {
         print('No audio file selected');
       }
@@ -75,17 +80,17 @@ class _UploadTextfieldState extends State<UploadTextfield> {
   void _deleteAudio() {
     setState(() {
       _audioFilePath = null;
-      _controller.clear();
+      widget.controller.clear();
       _isPlaying = false;
     });
     _playerController?.stopAllPlayers();
     _playerController?.dispose();
     _playerController = PlayerController();
+    widget.onAudioPathChanged?.call(null);
   }
 
   @override
   void dispose() {
-    _controller.dispose();
     _playerController?.dispose();
     super.dispose();
   }
@@ -145,7 +150,7 @@ class _UploadTextfieldState extends State<UploadTextfield> {
     }
 
     return TextFormField(
-      controller: _controller,
+      controller: widget.controller,
       readOnly: widget.isAudio,
       validator: (val) {
         if (val!.trim().isEmpty) {

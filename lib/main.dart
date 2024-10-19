@@ -5,6 +5,8 @@ import 'package:flutter_application_3/core/theme/colors.dart';
 import 'package:flutter_application_3/features/auth/cubit/cubit/user_auth_cubit.dart';
 import 'package:flutter_application_3/features/auth/repos/auth_repo.dart';
 import 'package:flutter_application_3/features/auth/ui/signup_screen.dart';
+import 'package:flutter_application_3/features/home/cubit/podcast_cubit.dart';
+import 'package:flutter_application_3/features/home/repo/podcast_repo.dart';
 import 'package:flutter_application_3/features/home/ui/screen/upload_podcast.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -15,10 +17,14 @@ void main() async {
 
   Dio mydio = Dio();
   AuthRepo authRepo = AuthImpl(dio: mydio);
-
+  PodcastRepo podcastRepo = PodcastImpl(dio: mydio);
   runApp(
     MultiBlocProvider(
       providers: [
+        BlocProvider(
+          create: (context) => PodcastCubit(podcastRepo),
+          child: Container(),
+        ),
         BlocProvider(
           create: (context) =>
               UserAuthCubit(authRepo)..fetchAndHandleUserData(),
@@ -67,7 +73,7 @@ class MyApp extends StatelessWidget {
                   );
                 }
               },
-              child: const SignupScreen() // Initial loading state
+              child: const CircularProgressIndicator() // Initial loading state
 
               ),
         );

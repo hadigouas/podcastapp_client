@@ -9,7 +9,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:r_dotted_line_border/r_dotted_line_border.dart';
 
 class UploadThumbnail extends StatefulWidget {
-  const UploadThumbnail({super.key});
+  final Function(String?) onThumbnailChanged;
+
+  const UploadThumbnail({super.key, required this.onThumbnailChanged});
 
   @override
   State<UploadThumbnail> createState() => _UploadThumbnailState();
@@ -24,6 +26,7 @@ class _UploadThumbnailState extends State<UploadThumbnail> {
       setState(() {
         _thumbnailPath = result.files.single.path;
       });
+      widget.onThumbnailChanged(_thumbnailPath);
     }
   }
 
@@ -73,6 +76,7 @@ class _UploadThumbnailState extends State<UploadThumbnail> {
                       setState(() {
                         _thumbnailPath = null;
                       });
+                      widget.onThumbnailChanged(null);
                     },
                     icon: const Icon(
                       Icons.delete,

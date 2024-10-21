@@ -4,7 +4,6 @@ import 'package:flutter_application_3/core/theme/colors.dart';
 import 'package:flutter_application_3/core/theme/textstyle.dart';
 import 'package:flutter_application_3/features/home/cubit/podcast_cubit.dart';
 import 'package:flutter_application_3/features/home/cubit/podcast_state.dart';
-import 'package:flutter_application_3/features/home/models/podcast_model.dart';
 import 'package:flutter_application_3/features/home/ui/widget/upload_textfiled.dart';
 import 'package:flutter_application_3/features/home/ui/widget/upload_thumbnail.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -54,21 +53,26 @@ class _UploadPodcastState extends State<UploadPodcast> {
     });
   }
 
-  Podcast _createPodcast() {
-    return Podcast(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      name: podcastNameController.text,
-      author: authorController.text,
-      audioUrl: audioPath ?? '',
-
-      thumbnailUrl: thumbnailPath!,
-      // Add other necessary fields
-    );
-  }
-
   void _uploadPodcast() {
-    final podcast = _createPodcast();
-    BlocProvider.of<PodcastCubit>(context).addPodcast(podcast);
+    if (podcastNameController.text.isEmpty ||
+        authorController.text.isEmpty ||
+        audioPath == null ||
+        thumbnailPath == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please fill in all the required fields.'),
+        ),
+      );
+      return;
+    }
+
+    BlocProvider.of<PodcastCubit>(context).addPodcast(
+      podcastNameController.text,
+      authorController.text,
+      audioPath!,
+      thumbnailPath!,
+      screenPickerColor.value.toRadixString(16).padLeft(8, '0'),
+    );
   }
 
   @override
@@ -76,15 +80,20 @@ class _UploadPodcastState extends State<UploadPodcast> {
     return BlocListener<PodcastCubit, PodcastState>(
       listener: (context, state) {
         if (state is PodcastSuccess) {
+          print("done");
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Podcast uploaded successfully!')),
+            const SnackBar(
+              content: Text('Podcast uploaded successfully!'),
+              backgroundColor: Colors.green,
+            ),
           );
-          Navigator.pop(context);
         } else if (state is PodcastFailed) {
+          print("no");
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-                content:
-                    Text('Failed to upload podcast: ${state.errorMessage}')),
+              content: Text('Failed to upload podcast: ${state.errorMessage}'),
+              backgroundColor: Colors.red,
+            ),
           );
         }
       },

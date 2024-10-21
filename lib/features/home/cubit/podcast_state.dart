@@ -12,13 +12,22 @@ class PodcastInitial extends PodcastState {}
 
 class PodcastLoading extends PodcastState {}
 
-class PodcastSuccess extends PodcastState {
+class PodcastList extends PodcastState {
   final List<Podcast> podcastList;
 
-  const PodcastSuccess(this.podcastList);
+  const PodcastList(this.podcastList);
 
   @override
   List<Object> get props => [podcastList];
+}
+
+class PodcastSuccess extends PodcastState {
+  final String message;
+
+  const PodcastSuccess(this.message);
+
+  @override
+  List<Object> get props => [message];
 }
 
 class PodcastFailed extends PodcastState {

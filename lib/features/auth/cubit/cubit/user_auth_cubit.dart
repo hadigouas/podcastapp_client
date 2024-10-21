@@ -18,7 +18,7 @@ class UserAuthCubit extends Cubit<UserAuthState> {
 
     emit(UserAuthIsLoading());
     final response = await _authRepo.login(email, password);
-    print(" the responnnnnnnnnnnnnnnnnnnes is $response");
+
     response.fold(
       (l) => emit(UserAuthFailed(l.message)),
       (r) => emit(UserAuthSuccess(r)),

@@ -4,6 +4,7 @@ class Podcast {
   final String author;
   final String audioUrl;
   final String thumbnailUrl;
+  final String color;
 
   Podcast({
     required this.id,
@@ -11,33 +12,37 @@ class Podcast {
     required this.author,
     required this.audioUrl,
     required this.thumbnailUrl,
+    required this.color,
   });
 
   // Factory constructor to create a Podcast object from a JSON map
   factory Podcast.fromJson(Map<String, dynamic> json) {
     return Podcast(
       id: json['id'] as String,
-      name: json['name'] as String,
+      name: json['podcast_name'] as String,
       author: json['author'] as String,
-      audioUrl: json['audio_url'] as String,
-      thumbnailUrl: json['thumbnail_url'] as String,
+      audioUrl: json['podcast_audio'] as String,
+      thumbnailUrl: json['thumbnail'] as String,
+      color: json['color'] as String,
     );
   }
 
   // Method to convert Podcast object to a JSON map
   Map<String, dynamic> toJson() {
     return {
-      'name': name,
+      'id': id,
+      'podcast_name': name,
       'author': author,
-      'audio_url': audioUrl,
-      'thumbnail_url': thumbnailUrl,
+      'podcast_audio': audioUrl,
+      'thumbnail': thumbnailUrl,
+      'color': color,
     };
   }
 
   // Override toString for easy printing of Podcast objects
   @override
   String toString() {
-    return 'Podcast{ name: $name, author: $author, audioUrl: $audioUrl, thumbnailUrl: $thumbnailUrl';
+    return 'Podcast{ id: $id, name: $name, author: $author, audioUrl: $audioUrl, thumbnailUrl: $thumbnailUrl, color: $color }';
   }
 
   // Override == operator for comparison
@@ -46,10 +51,12 @@ class Podcast {
     if (identical(this, other)) return true;
 
     return other is Podcast &&
+        other.id == id &&
         other.name == name &&
         other.author == author &&
         other.audioUrl == audioUrl &&
-        other.thumbnailUrl == thumbnailUrl;
+        other.thumbnailUrl == thumbnailUrl &&
+        other.color == color;
   }
 
   // Override hashCode
@@ -59,7 +66,8 @@ class Podcast {
         name.hashCode ^
         author.hashCode ^
         audioUrl.hashCode ^
-        thumbnailUrl.hashCode;
+        thumbnailUrl.hashCode ^
+        color.hashCode;
   }
 
   // Copywidth method for creating a new Podcast object with some updated fields
@@ -69,7 +77,7 @@ class Podcast {
     String? author,
     String? audioUrl,
     String? thumbnailUrl,
-    String? userId,
+    String? color,
   }) {
     return Podcast(
       id: id ?? this.id,
@@ -77,6 +85,7 @@ class Podcast {
       author: author ?? this.author,
       audioUrl: audioUrl ?? this.audioUrl,
       thumbnailUrl: thumbnailUrl ?? this.thumbnailUrl,
+      color: color ?? this.color,
     );
   }
 }

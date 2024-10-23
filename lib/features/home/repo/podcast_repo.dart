@@ -34,7 +34,7 @@ class PodcastImpl implements PodcastRepo {
   Future<Either<ServerFailure, List<Podcast>>> getAllPodcasts() async {
     // Implementation remains the same
     try {
-      final response = await dio.get('podcast');
+      final response = await dio.get('podcast/list');
       if (response.statusCode == 200) {
         final List<dynamic> data = response.data;
         final podcasts = data.map((json) => Podcast.fromJson(json)).toList();

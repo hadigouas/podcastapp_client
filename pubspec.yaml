@@ -28,6 +28,7 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
+  audio_session: ^0.1.21
   audio_waveforms: ^1.1.0
   cupertino_icons: ^1.0.8
   dartz: ^0.10.1
@@ -40,6 +41,9 @@ dependencies:
   flutter_bloc: ^8.1.6
   flutter_screenutil: ^5.9.3
   google_fonts: ^6.2.1
+  just_audio: ^0.9.41
+  just_audio_background: ^0.0.1-beta.13
+  path_provider: ^2.1.4
   r_dotted_line_border: ^0.1.1
   shared_preferences: ^2.3.2
 

@@ -7,7 +7,7 @@ import 'package:flutter_application_3/features/auth/repos/auth_repo.dart';
 import 'package:flutter_application_3/features/auth/ui/signup_screen.dart';
 import 'package:flutter_application_3/features/home/cubit/podcast_cubit.dart';
 import 'package:flutter_application_3/features/home/repo/podcast_repo.dart';
-import 'package:flutter_application_3/features/home/ui/screen/upload_podcast.dart';
+import 'package:flutter_application_3/navigation_bar.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -62,7 +62,7 @@ class MyApp extends StatelessWidget {
                   Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => const UploadPodcast()),
+                        builder: (context) => const MyNavigationBar()),
                   );
                 } else if (state is UserAuthFailed) {
                   // Navigate to SignupScreen if authentication fails

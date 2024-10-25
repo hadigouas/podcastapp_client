@@ -1,7 +1,9 @@
 import 'package:audio_session/audio_session.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_3/core/theme/textstyle.dart';
+import 'package:flutter_application_3/features/home/cubit/podcast_cubit.dart';
 import 'package:flutter_application_3/features/home/models/podcast_model.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:just_audio/just_audio.dart';
 
 class PodcastPlayerScreen extends StatefulWidget {
@@ -45,7 +47,6 @@ class _PodcastPlayerScreenState extends State<PodcastPlayerScreen> {
 
     _audioPlayer = AudioPlayer();
 
-    // Configure audio session with error handling
     try {
       final session = await AudioSession.instance;
       await session.configure(const AudioSessionConfiguration.speech());
@@ -71,7 +72,6 @@ class _PodcastPlayerScreenState extends State<PodcastPlayerScreen> {
       },
     );
 
-    // Handle player state changes
     _audioPlayer.processingStateStream.listen((state) {
       if (mounted) {
         setState(() {
@@ -83,7 +83,6 @@ class _PodcastPlayerScreenState extends State<PodcastPlayerScreen> {
       }
     });
 
-    // Set up the audio source with retry mechanism
     await _loadAudioSource();
   }
 
@@ -130,6 +129,10 @@ class _PodcastPlayerScreenState extends State<PodcastPlayerScreen> {
       if (_isPlaying) {
         await _audioPlayer.pause();
       } else {
+        BlocProvider.of<PodcastCubit>(context).toggleSclabbar(
+          _audioPlayer,
+          widget.podcast,
+        );
         await _audioPlayer.play();
       }
     } catch (e) {
@@ -153,11 +156,10 @@ class _PodcastPlayerScreenState extends State<PodcastPlayerScreen> {
         Color(int.parse(widget.podcast.color.replaceAll('#', '0xff')));
 
     return Scaffold(
-      backgroundColor: podcastColor
-          .withOpacity(0.15), // Using a light opacity for better readability
+      backgroundColor: podcastColor.withOpacity(0.15),
       appBar: AppBar(
         title: Text(
-          'Now Playing',
+          'Podcast Player',
           style: AppTextStyles.darkBodyText1,
         ),
         centerTitle: true,
@@ -247,7 +249,7 @@ class _PodcastPlayerScreenState extends State<PodcastPlayerScreen> {
             borderRadius: BorderRadius.circular(10),
             child: Image.network(
               widget.podcast.thumbnailUrl,
-              fit: BoxFit.cover,
+              fit: BoxFit.fitWidth,
               errorBuilder: (context, error, stackTrace) {
                 return Container(
                   color: podcastColor.withOpacity(0.3),
@@ -276,9 +278,20 @@ class _PodcastPlayerScreenState extends State<PodcastPlayerScreen> {
             ),
           ),
         ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Text(
+            widget.podcast.author,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: Colors.grey,
+              fontSize: 19,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
         const SizedBox(height: 8),
 
-        // Progress Slider
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: SliderTheme(
@@ -297,7 +310,6 @@ class _PodcastPlayerScreenState extends State<PodcastPlayerScreen> {
           ),
         ),
 
-        // Time indicators
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Row(
@@ -316,7 +328,6 @@ class _PodcastPlayerScreenState extends State<PodcastPlayerScreen> {
         ),
         const SizedBox(height: 20),
 
-        // Playback Controls
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [

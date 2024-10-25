@@ -1,9 +1,12 @@
 import 'package:flutter_application_3/features/home/cubit/podcast_state.dart';
+import 'package:flutter_application_3/features/home/models/podcast_model.dart';
 import 'package:flutter_application_3/features/home/repo/podcast_repo.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:just_audio/just_audio.dart';
 
 class PodcastCubit extends Cubit<PodcastState> {
   final PodcastRepo _podcastRepo;
+  bool isActive = false;
   PodcastCubit(this._podcastRepo) : super(PodcastInitial());
 
   Future<void> addPodcast(String name, String author, String audioPath,
@@ -75,4 +78,9 @@ class PodcastCubit extends Cubit<PodcastState> {
   //     emit(PodcastFailed(errorMessage: e.toString()));
   //   }
   // }
+  void toggleSclabbar(AudioPlayer audioPlayer, Podcast podcast) {
+    isActive = !isActive;
+    emit(SclabBar(
+        podcast: podcast, audioPlayer: audioPlayer, isActive: isActive));
+  }
 }

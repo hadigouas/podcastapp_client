@@ -62,7 +62,10 @@ class MyApp extends StatelessWidget {
                   Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => const MyNavigationBar()),
+                        builder: (context) => const MyNavigationBar(
+                              audioPlayer: null,
+                              podcast: null,
+                            )),
                   );
                 } else if (state is UserAuthFailed) {
                   // Navigate to SignupScreen if authentication fails

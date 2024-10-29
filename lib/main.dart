@@ -76,7 +76,8 @@ class MyApp extends StatelessWidget {
                   );
                 }
               },
-              child: const CircularProgressIndicator() // Initial loading state
+              child: const Center(
+                  child: CircularProgressIndicator()) // Initial loading state
 
               ),
         );

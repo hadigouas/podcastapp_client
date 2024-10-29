@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_3/core/theme/colors.dart';
 import 'package:flutter_application_3/core/theme/textstyle.dart';
@@ -59,16 +60,23 @@ class _MyHomePageState extends State<MyHomePage> {
                                         MaterialPageRoute(
                                           builder: (context) =>
                                               PodcastPlayerScreen(
+                                                  audioPlayer: null,
                                                   podcast:
                                                       state.podcastList[index]),
                                         ));
                                   },
                                   child: ClipRRect(
                                     borderRadius: BorderRadius.circular(12),
-                                    child: Image.network(
-                                      state.podcastList[index].thumbnailUrl,
+                                    child: CachedNetworkImage(
+                                      imageUrl:
+                                          state.podcastList[index].thumbnailUrl,
                                       width: 120.w,
                                       height: 100.h,
+                                      placeholder: (context, url) =>
+                                          const CircularProgressIndicator(), // Optional: placeholder while loading
+                                      errorWidget: (context, url, error) =>
+                                          const Icon(Icons
+                                              .error), // Optional: error widget if loading fails
                                     ),
                                   ),
                                 )),

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_3/core/theme/colors.dart';
 import 'package:flutter_application_3/features/home/models/podcast_model.dart';
 import 'package:flutter_application_3/features/home/ui/screen/homepage.dart';
-import 'package:flutter_application_3/features/home/ui/widget/slidbar_player.dart';
+import 'package:flutter_application_3/features/home/ui/widget/mini_player.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:just_audio/just_audio.dart';
 
 class MyNavigationBar extends StatefulWidget {
@@ -51,20 +53,33 @@ class _MyNavigationBarState extends State<MyNavigationBar> {
                     podcast: widget.podcast!,
                   ),
                 const SizedBox(height: 8),
-                NavigationBar(
-                  selectedIndex: _selectedIndex,
-                  onDestinationSelected: _onItemTapped,
-                  destinations: const [
-                    NavigationDestination(
-                      icon: Icon(Icons.home),
-                      label: 'Home',
+                NavigationBarTheme(
+                  data: NavigationBarThemeData(
+                    labelTextStyle: WidgetStateProperty.all(
+                      const TextStyle(color: Colors.white),
                     ),
-                    NavigationDestination(
-                      icon: Icon(Icons.library_books),
-                      label: 'Library',
-                    ),
-                  ],
-                ),
+                  ),
+                  child: NavigationBar(
+                    height: 50.h,
+                    backgroundColor: AppColors.darkBackgroundColor,
+                    indicatorColor: AppColors.darkTextSecondaryColor,
+                    selectedIndex: _selectedIndex,
+                    onDestinationSelected: _onItemTapped,
+                    destinations: const [
+                      NavigationDestination(
+                        icon: Icon(
+                          Icons.home,
+                          color: Colors.white,
+                        ),
+                        label: 'Home',
+                      ),
+                      NavigationDestination(
+                        icon: Icon(Icons.library_books, color: Colors.white),
+                        label: 'Library',
+                      ),
+                    ],
+                  ),
+                )
               ],
             ),
           ),

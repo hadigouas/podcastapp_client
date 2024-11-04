@@ -10,14 +10,24 @@ import 'package:flutter_application_3/features/home/repo/podcast_repo.dart';
 import 'package:flutter_application_3/navigation_bar.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:just_audio_background/just_audio_background.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await JustAudioBackground.init(
+    androidNotificationChannelId: 'com.ryanheise.bg_demo.channel.audio',
+    androidNotificationChannelName: 'Audio playback',
+    androidNotificationOngoing: true,
+    androidShowNotificationBadge: true,
+    androidStopForegroundOnPause:
+        true, // Optional: set to false if you want notification to stay when paused
+  );
   await SharedPrefs.init();
 
   Dio mydio = Dio();
   AuthRepo authRepo = AuthImpl(dio: mydio);
   PodcastRepo podcastRepo = PodcastImpl(dio: mydio);
+
   runApp(
     MultiBlocProvider(
       providers: [

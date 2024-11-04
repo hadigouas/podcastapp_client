@@ -7,6 +7,7 @@ import 'package:flutter_application_3/features/home/models/podcast_model.dart';
 import 'package:flutter_application_3/navigation_bar.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:just_audio_background/just_audio_background.dart';
 
 class PodcastPlayerScreen extends StatefulWidget {
   final Podcast podcast;
@@ -57,25 +58,38 @@ class _PodcastPlayerScreenState extends State<PodcastPlayerScreen>
       final session = await AudioSession.instance;
       await session.configure(const AudioSessionConfiguration.speech());
 
-      _audioPlayer = widget.audioPlayer ??
-          await _audioManager.getPlayer(widget.podcast.audioUrl);
-      _currentAudioUrl = widget.podcast.audioUrl;
+      // Create audio source with MediaItem before getting or creating the player
+      final audioSource = AudioSource.uri(
+        Uri.parse(widget.podcast.audioUrl),
+        tag: MediaItem(
+          id: widget.podcast.id,
+          album: "Podcast Album",
+          title: widget.podcast.name,
+          artist: widget.podcast.author,
+          artUri: Uri.parse(widget.podcast.thumbnailUrl),
+          // Add duration if available
+          duration: _duration,
+        ),
+      );
 
+      if (widget.audioPlayer != null &&
+          widget.podcast.audioUrl == _currentAudioUrl) {
+        _audioPlayer = widget.audioPlayer!;
+      } else {
+        _audioPlayer = AudioPlayer();
+        await _audioPlayer.setAudioSource(audioSource);
+      }
+
+      _currentAudioUrl = widget.podcast.audioUrl;
       _setupStreamListeners();
 
-      if (widget.audioPlayer == null ||
-          widget.podcast.audioUrl != _currentAudioUrl) {
-        await _loadAudioSource();
-      } else {
-        // If using existing player, just update the state
-        setState(() {
-          _duration = _audioPlayer.duration ?? Duration.zero;
-          _position = _audioPlayer.position;
-          _isPlaying = _audioPlayer.playing;
-          _isLoading = false;
-          _isInitialized = true;
-        });
-      }
+      setState(() {
+        _duration = _audioPlayer.duration ?? Duration.zero;
+        _position = _audioPlayer.position;
+        _isPlaying = _audioPlayer.playing;
+        _isLoading = false;
+        _isInitialized = true;
+      });
     } catch (e) {
       _handleError('Failed to setup audio player: $e');
     }
@@ -115,7 +129,15 @@ class _PodcastPlayerScreenState extends State<PodcastPlayerScreen>
     try {
       final audioSource = AudioSource.uri(
         Uri.parse(widget.podcast.audioUrl),
-        headers: {'User-Agent': 'YourApp/1.0'},
+        tag: MediaItem(
+          id: widget.podcast.id,
+          album: "Podcast Album",
+          title: widget.podcast.name,
+          artist: widget.podcast.author,
+          artUri: Uri.parse(widget.podcast.thumbnailUrl),
+          // Add duration if available
+          duration: _duration,
+        ),
       );
 
       await _audioPlayer.setAudioSource(
@@ -172,11 +194,26 @@ class _PodcastPlayerScreenState extends State<PodcastPlayerScreen>
   void _navigateToNavigationBar() {
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(
-        builder: (context) => MyNavigationBar(
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            MyNavigationBar(
           audioPlayer: _audioPlayer,
           podcast: widget.podcast,
         ),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          const begin = Offset(0.0, -1.0); // Slide down from top to bottom
+          const end = Offset.zero;
+          const curve = Curves.easeInOut;
+
+          var tween =
+              Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+          var offsetAnimation = animation.drive(tween);
+
+          return SlideTransition(
+            position: offsetAnimation,
+            child: child,
+          );
+        },
       ),
     );
   }
@@ -218,10 +255,6 @@ class _PodcastPlayerScreenState extends State<PodcastPlayerScreen>
   PreferredSizeWidget _buildAppBar(Color podcastColor) {
     return AppBar(
       elevation: 0,
-      leading: IconButton(
-        onPressed: _navigateToNavigationBar,
-        icon: const Icon(Icons.arrow_back),
-      ),
       title: Text(
         'Podcast Player',
         style: AppTextStyles.darkBodyText1,

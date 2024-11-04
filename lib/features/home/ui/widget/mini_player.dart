@@ -18,13 +18,26 @@ class MiniPlayer extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => PodcastPlayerScreen(
+        Navigator.of(context).push(
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                PodcastPlayerScreen(
               podcast: podcast,
               audioPlayer: audioPlayer,
             ),
+            // Make it slide up from bottom
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+              return SlideTransition(
+                position: Tween<Offset>(
+                  begin: const Offset(0, 1), // Start from bottom (0, 1)
+                  end: Offset.zero, // End at top (0, 0)
+                ).animate(animation),
+                child: child,
+              );
+            },
+            // Animation duration
+            transitionDuration: const Duration(milliseconds: 300),
           ),
         );
       },
@@ -44,7 +57,6 @@ class MiniPlayer extends StatelessWidget {
         ),
         child: Row(
           children: [
-            // Album/Track Image
             Container(
               width: 50,
               height: 50,
@@ -61,7 +73,6 @@ class MiniPlayer extends StatelessWidget {
               ),
             ),
 
-            // Track Info and Timeline
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

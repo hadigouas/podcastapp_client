@@ -18,6 +18,7 @@ class MiniPlayer extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
+        audioPlayer?.dispose();
         Navigator.of(context).push(
           PageRouteBuilder(
             pageBuilder: (context, animation, secondaryAnimation) =>
@@ -25,7 +26,6 @@ class MiniPlayer extends StatelessWidget {
               podcast: podcast,
               audioPlayer: audioPlayer,
             ),
-            // Make it slide up from bottom
             transitionsBuilder:
                 (context, animation, secondaryAnimation, child) {
               return SlideTransition(
@@ -36,7 +36,6 @@ class MiniPlayer extends StatelessWidget {
                 child: child,
               );
             },
-            // Animation duration
             transitionDuration: const Duration(milliseconds: 300),
           ),
         );

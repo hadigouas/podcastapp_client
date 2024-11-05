@@ -34,6 +34,15 @@ class PodcastList extends PodcastState {
   List<Object> get props => [podcastList];
 }
 
+class PodcastSearchResults extends PodcastState {
+  final List<Podcast> searchResults;
+
+  const PodcastSearchResults(this.searchResults);
+
+  @override
+  List<Object> get props => [searchResults];
+}
+
 class PodcastSuccess extends PodcastState {
   final String message;
 

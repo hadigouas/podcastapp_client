@@ -72,7 +72,7 @@ class _MyNavigationBarState extends State<MyNavigationBar> {
                         ),
                       ),
                       child: NavigationBar(
-                        height: 50.h,
+                        height: 30.h,
                         backgroundColor: AppColors.darkBackgroundColor,
                         indicatorColor: AppColors.darkTextSecondaryColor,
                         selectedIndex: _selectedIndex,

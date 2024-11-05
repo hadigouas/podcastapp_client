@@ -1,13 +1,12 @@
-import 'package:cached_network_image/cached_network_image.dart';
+import 'dart:async';
+
 import 'package:flutter/material.dart';
-import 'package:flutter_application_3/core/theme/colors.dart';
-import 'package:flutter_application_3/core/theme/textstyle.dart';
 import 'package:flutter_application_3/features/auth/model/user_auth_modules.dart';
 import 'package:flutter_application_3/features/home/cubit/podcast_cubit.dart';
 import 'package:flutter_application_3/features/home/cubit/podcast_state.dart';
-import 'package:flutter_application_3/features/home/ui/screen/audio_playing_screen.dart';
+import 'package:flutter_application_3/features/home/ui/widget/podcast_list.dart';
+import 'package:flutter_application_3/features/home/ui/widget/podcast_search.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class MyHomePage extends StatefulWidget {
   final User user;
@@ -21,185 +20,90 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  final ScrollController _scrollController = ScrollController();
+  final TextEditingController _searchController = TextEditingController();
+  Timer? _debounce;
+
   @override
   void initState() {
     BlocProvider.of<PodcastCubit>(context).getAllPodcasts();
+    _searchController.addListener(_onSearchChanged);
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    _searchController.dispose();
+    _debounce?.cancel();
+    super.dispose();
+  }
+
+  void _onSearchChanged() {
+    if (_debounce?.isActive ?? false) _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 300), () {
+      final query = _searchController.text;
+      if (query.isEmpty) {
+        BlocProvider.of<PodcastCubit>(context).getAllPodcasts();
+      } else {
+        BlocProvider.of<PodcastCubit>(context).searchPodcasts(query);
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        appBar: AppBar(
-          backgroundColor: AppColors.darkBackgroundColor,
-        ),
-        body: BlocBuilder<PodcastCubit, PodcastState>(
-          builder: (context, state) {
-            if (state is PodcastList) {
-              final shuffledList = List.of(state.podcastList)..shuffle();
-
-              return Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: ListView(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Column(
-                          children: [
-                            Text(
-                              "   good Evening",
-                              style: AppTextStyles.darkBodyText2,
-                            ),
-                            const SizedBox(
-                              height: 5,
-                            ),
-                            Text(
-                              widget.user.name!,
-                              style: AppTextStyles.darkHeadline2,
-                            ),
-                          ],
-                        ),
-                        const CircleAvatar(
-                          radius: 30,
-                          child: Center(
-                            child: Icon(
-                              Icons.person,
-                              size: 30,
-                            ),
-                          ),
+        body: Column(
+          children: [
+            Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 10.0, vertical: 20),
+              child: TextField(
+                controller: _searchController,
+                decoration: InputDecoration(
+                  enabledBorder: const OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(20)),
+                    borderSide: BorderSide(width: 3, color: Colors.purple),
+                  ),
+                  border: const OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(20)),
+                      borderSide: BorderSide(width: 3, color: Colors.purple)),
+                  labelText: 'Search Podcasts',
+                  prefixIcon: const Icon(Icons.search),
+                  suffixIcon: _searchController.text.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(Icons.clear),
+                          onPressed: () {
+                            _searchController.clear();
+                            BlocProvider.of<PodcastCubit>(context)
+                                .getAllPodcasts();
+                          },
                         )
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      "Latest update",
-                      style: AppTextStyles.darkHeadline1,
-                    ),
-                    const SizedBox(height: 10),
-                    SizedBox(
-                      height: 160.h,
-                      width: MediaQuery.of(context).size.width,
-                      child: ListView.builder(
-                        itemCount: state.podcastList.length,
-                        itemBuilder: (context, index) {
-                          return Column(
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: GestureDetector(
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            PodcastPlayerScreen(
-                                          audioPlayer: null,
-                                          podcast: state.podcastList[index],
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(12),
-                                    child: CachedNetworkImage(
-                                      imageUrl:
-                                          state.podcastList[index].thumbnailUrl,
-                                      width: 120.w,
-                                      height: 100.h,
-                                      placeholder: (context, url) =>
-                                          const CircularProgressIndicator(),
-                                      errorWidget: (context, url, error) =>
-                                          const Icon(Icons.error),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              Text(
-                                state.podcastList[index].name,
-                                style: AppTextStyles.darkBodyText1,
-                              ),
-                              Text(
-                                state.podcastList[index].author,
-                                style: AppTextStyles.darkBodyText2,
-                              ),
-                            ],
-                          );
-                        },
-                        scrollDirection: Axis.horizontal,
-                      ),
-                    ),
-                    Text(
-                      "Recommended for you",
-                      style: AppTextStyles.darkHeadline2,
-                    ),
-                    SizedBox(
-                      height: 160.h,
-                      width: MediaQuery.of(context).size.width,
-                      child: ListView.builder(
-                        itemCount: 5,
-                        itemBuilder: (context, index) {
-                          return Column(
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: GestureDetector(
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            PodcastPlayerScreen(
-                                          audioPlayer: null,
-                                          podcast: shuffledList[index],
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(12),
-                                    child: CachedNetworkImage(
-                                      imageUrl:
-                                          shuffledList[index].thumbnailUrl,
-                                      width: 120.w,
-                                      height: 100.h,
-                                      placeholder: (context, url) =>
-                                          const CircularProgressIndicator(),
-                                      errorWidget: (context, url, error) =>
-                                          const Icon(Icons.error),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              Text(
-                                shuffledList[index].name,
-                                style: AppTextStyles.darkBodyText1,
-                              ),
-                              Text(
-                                shuffledList[index].author,
-                                style: AppTextStyles.darkBodyText2,
-                              ),
-                            ],
-                          );
-                        },
-                        scrollDirection: Axis.horizontal,
-                      ),
-                    ),
-                  ],
+                      : null,
                 ),
-              );
-            } else if (state is PodcastFailed) {
-              return Center(
-                child: Text(
-                  state.errorMessage,
-                  style: AppTextStyles.darkHeadline1,
-                ),
-              );
-            } else {
-              return const CircularProgressIndicator();
-            }
-          },
+              ),
+            ),
+            Expanded(
+              child: BlocBuilder<PodcastCubit, PodcastState>(
+                builder: (context, state) {
+                  if (state is PodcastList) {
+                    return PodcastListWidget(
+                      podcasts: state.podcastList,
+                      user: widget.user,
+                    );
+                  } else if (state is PodcastSearchResults) {
+                    return PodcastSearchResultsWidget(
+                      searchResults: state.searchResults,
+                    );
+                  } else {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                },
+              ),
+            ),
+          ],
         ),
       ),
     );

@@ -13,13 +13,10 @@ class AudioPlayerManager {
   String? _currentAudioUrl;
 
   Future<AudioPlayer> getPlayer(String audioUrl) async {
-    if (_currentPlayer != null && _currentAudioUrl != audioUrl) {
-      await _currentPlayer!.stop();
-    }
-
     _currentPlayer ??= AudioPlayer();
 
     if (_currentAudioUrl != audioUrl) {
+      await _currentPlayer!.stop();
       _currentAudioUrl = audioUrl;
       await _currentPlayer!.setAudioSource(
         AudioSource.uri(
@@ -28,7 +25,6 @@ class AudioPlayerManager {
         ),
       );
     }
-
     return _currentPlayer!;
   }
 

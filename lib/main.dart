@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_application_3/audio_player_service.dart';
 import 'package:flutter_application_3/core/classes/shared_pref.dart';
 import 'package:flutter_application_3/core/theme/colors.dart';
 import 'package:flutter_application_3/features/auth/cubit/cubit/user_auth_cubit.dart';
@@ -14,6 +15,7 @@ import 'package:just_audio_background/just_audio_background.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  setupLocator();
   await JustAudioBackground.init(
     androidNotificationChannelId: 'com.example.myapp.channel.audio',
     androidNotificationChannelName: 'Audio playback',
@@ -73,7 +75,6 @@ class MyApp extends StatelessWidget {
                     context,
                     MaterialPageRoute(
                         builder: (context) => const MyNavigationBar(
-                              audioPlayer: null,
                               podcast: null,
                             )),
                   );

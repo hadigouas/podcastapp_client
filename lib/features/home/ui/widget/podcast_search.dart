@@ -26,7 +26,6 @@ class PodcastSearchResultsWidget extends StatelessWidget {
               context,
               MaterialPageRoute(
                 builder: (context) => PodcastPlayerScreen(
-                  audioPlayer: null,
                   podcast: searchResults[index],
                 ),
               ),

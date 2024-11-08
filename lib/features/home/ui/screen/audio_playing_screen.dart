@@ -1,8 +1,8 @@
 import 'package:audio_session/audio_session.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_application_3/audio_player_service.dart';
 import 'package:flutter_application_3/core/theme/textstyle.dart';
-import 'package:flutter_application_3/features/home/models/audio_managing.dart';
 import 'package:flutter_application_3/features/home/models/podcast_model.dart';
 import 'package:flutter_application_3/navigation_bar.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -11,12 +11,10 @@ import 'package:just_audio_background/just_audio_background.dart';
 
 class PodcastPlayerScreen extends StatefulWidget {
   final Podcast podcast;
-  final AudioPlayer? audioPlayer;
 
   const PodcastPlayerScreen({
     super.key,
     required this.podcast,
-    required this.audioPlayer,
   });
 
   @override
@@ -25,17 +23,13 @@ class PodcastPlayerScreen extends StatefulWidget {
 
 class _PodcastPlayerScreenState extends State<PodcastPlayerScreen>
     with SingleTickerProviderStateMixin {
-  late AudioPlayer _audioPlayer;
-  final _audioManager = AudioPlayerManager();
-  bool _isPlaying = false;
-  Duration _duration = Duration.zero;
+  final AudioPlayer audioPlayer = getIt<AudioPlayer>(); // Singleton instance
   Duration _position = Duration.zero;
-  String? _errorMessage;
-  bool _isLoading = true;
+  Duration _duration = Duration.zero;
+  bool _isPlaying = false;
   bool _isInitialized = false;
   bool _isFavorite = false;
   late AnimationController _favoriteController;
-  String? _currentAudioUrl;
 
   @override
   void initState() {
@@ -44,7 +38,7 @@ class _PodcastPlayerScreenState extends State<PodcastPlayerScreen>
       duration: const Duration(milliseconds: 200),
       vsync: this,
     );
-    _setupAudioPlayer();
+    _initializePlayer();
   }
 
   @override
@@ -53,141 +47,61 @@ class _PodcastPlayerScreenState extends State<PodcastPlayerScreen>
     super.dispose();
   }
 
-  Future<void> _setupAudioPlayer() async {
+  Future<void> _initializePlayer() async {
     try {
       final session = await AudioSession.instance;
       await session.configure(const AudioSessionConfiguration.speech());
 
-      // Create audio source with MediaItem before getting or creating the player
-      final audioSource = AudioSource.uri(
-        Uri.parse(widget.podcast.audioUrl),
-        tag: MediaItem(
-          id: widget.podcast.id,
-          album: "Podcast Album",
-          title: widget.podcast.name,
-          artist: widget.podcast.author,
-          artUri: Uri.parse(widget.podcast.thumbnailUrl),
-          // Add duration if available
-          duration: _duration,
-        ),
-      );
-
-      if (widget.audioPlayer != null &&
-          widget.podcast.audioUrl == _currentAudioUrl) {
-        _audioPlayer = widget.audioPlayer!;
-      } else {
-        _audioPlayer = AudioPlayer();
-        await _audioPlayer.setAudioSource(audioSource);
+      if (audioPlayer.audioSource?.toString() != widget.podcast.audioUrl) {
+        await audioPlayer.setAudioSource(
+          AudioSource.uri(
+            Uri.parse(widget.podcast.audioUrl),
+            tag: MediaItem(
+              id: widget.podcast.id,
+              title: widget.podcast.name,
+              artist: widget.podcast.author,
+              artUri: Uri.parse(widget.podcast.thumbnailUrl),
+            ),
+          ),
+        );
       }
 
-      _currentAudioUrl = widget.podcast.audioUrl;
-      _setupStreamListeners();
+      if (_isPlaying) {
+        await audioPlayer.play(); // Resume playback if it's paused
+      }
 
-      setState(() {
-        _duration = _audioPlayer.duration ?? Duration.zero;
-        _position = _audioPlayer.position;
-        _isPlaying = _audioPlayer.playing;
-        _isLoading = false;
-        _isInitialized = true;
-      });
+      _setupListeners();
+      setState(() => _isInitialized = true);
     } catch (e) {
-      _handleError('Failed to setup audio player: $e');
+      _handleError('Failed to load audio source: $e');
     }
   }
 
-  void _setupStreamListeners() {
-    _audioPlayer.positionStream.listen((position) {
+  void _setupListeners() {
+    audioPlayer.positionStream.listen((position) {
       if (mounted) {
-        setState(() {
-          _position = position;
-        });
+        setState(() => _position = position);
       }
     });
 
-    // Playback event stream
-    _audioPlayer.playbackEventStream.listen(
-      (event) {
-        if (mounted) {
-          setState(() {
-            _duration = event.duration ?? Duration.zero;
-            _isPlaying = _audioPlayer.playing;
-          });
-        }
-      },
-      onError: (Object e, StackTrace st) {
-        _handleError('Playback error: $e');
-      },
-    );
-  }
-
-  Future<void> _loadAudioSource() async {
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
+    audioPlayer.durationStream.listen((duration) {
+      if (mounted) {
+        setState(() => _duration = duration ?? Duration.zero);
+      }
     });
 
-    try {
-      final audioSource = AudioSource.uri(
-        Uri.parse(widget.podcast.audioUrl),
-        tag: MediaItem(
-          id: widget.podcast.id,
-          album: "Podcast Album",
-          title: widget.podcast.name,
-          artist: widget.podcast.author,
-          artUri: Uri.parse(widget.podcast.thumbnailUrl),
-          // Add duration if available
-          duration: _duration,
-        ),
-      );
-
-      await _audioPlayer.setAudioSource(
-        audioSource,
-        initialPosition: Duration.zero,
-        preload: true,
-      );
-
-      setState(() {
-        _isLoading = false;
-        _isInitialized = true;
-        _currentAudioUrl = widget.podcast.audioUrl;
-      });
-    } catch (e) {
-      _handleError('Failed to load audio: $e');
-    }
-  }
-
-  void _handleError(String message) {
-    debugPrint(message);
-    if (mounted) {
-      setState(() {
-        _errorMessage = message;
-        _isLoading = false;
-        _isInitialized = false;
-      });
-    }
+    audioPlayer.playingStream.listen((isPlaying) {
+      if (mounted) {
+        setState(() => _isPlaying = isPlaying);
+      }
+    });
   }
 
   Future<void> _togglePlayPause() async {
-    if (!_isInitialized) return;
-
-    try {
-      if (_isPlaying) {
-        await _audioPlayer.pause();
-      } else {
-        await _audioPlayer.play();
-      }
-    } catch (e) {
-      _handleError('Playback control error: $e');
-    }
-  }
-
-  Future<void> _seekTo(Duration position) async {
-    if (!_isInitialized) return;
-
-    try {
-      await _audioPlayer.seek(position);
-    } catch (e) {
-      _handleError('Seek error: $e');
+    if (_isPlaying) {
+      await audioPlayer.pause();
+    } else {
+      await audioPlayer.play();
     }
   }
 
@@ -197,7 +111,7 @@ class _PodcastPlayerScreenState extends State<PodcastPlayerScreen>
       PageRouteBuilder(
         pageBuilder: (context, animation, secondaryAnimation) =>
             MyNavigationBar(
-          audioPlayer: _audioPlayer,
+          // Pass the player for state sync
           podcast: widget.podcast,
         ),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -228,27 +142,94 @@ class _PodcastPlayerScreenState extends State<PodcastPlayerScreen>
         : '$minutes:$seconds';
   }
 
+  void _handleError(String message) {
+    debugPrint(message);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     Color podcastColor =
         Color(int.parse(widget.podcast.color.replaceAll('#', '0xff')));
 
-    return PopScope(
-      canPop: false,
-      onPopInvoked: (didPop) {
-        if (!didPop) {
-          _navigateToNavigationBar();
-        }
-      },
-      child: Scaffold(
-        backgroundColor: podcastColor.withOpacity(0.15),
-        appBar: _buildAppBar(podcastColor),
-        body: _isLoading
-            ? _buildLoadingIndicator()
-            : _errorMessage != null
-                ? _buildErrorWidget()
-                : _buildPlayerWidget(podcastColor),
-      ),
+    return Scaffold(
+      backgroundColor: podcastColor.withOpacity(0.15),
+      appBar: _buildAppBar(podcastColor),
+      body: _isInitialized
+          ? SafeArea(
+              child: Stack(
+                children: [
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width,
+                    height: MediaQuery.of(context).size.height,
+                    child: CachedNetworkImage(
+                      imageUrl: widget.podcast.thumbnailUrl,
+                      fit: BoxFit.cover,
+                      placeholder: (context, url) => Stack(
+                        children: [
+                          Container(
+                            height: 300,
+                            width: 300,
+                            color: Colors.grey[900],
+                            child: const Center(
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Container(
+                    width: MediaQuery.of(context).size.width,
+                    height: MediaQuery.of(context).size.height,
+                    color: podcastColor.withOpacity(0.8),
+                  ),
+                  Column(
+                    children: [
+                      SizedBox(height: 50.h),
+                      _buildHeader(),
+                      _buildPodcastImage(),
+                      _buildPodcastInfo(),
+                      SizedBox(height: 50.h),
+                      Expanded(
+                        child: Stack(
+                          children: [
+                            Align(
+                              alignment: Alignment.bottomCenter,
+                              child: Container(
+                                width: MediaQuery.of(context)
+                                    .size
+                                    .width, // Optional: adjust width
+                                height: 120.h,
+                                decoration: const BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.only(
+                                    topLeft: Radius.circular(20.0),
+                                    topRight: Radius.circular(20.0),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            Column(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                _buildProgressBar(podcastColor),
+                                _buildControlButtons(podcastColor),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            )
+          : const Center(child: CircularProgressIndicator()),
     );
   }
 
@@ -261,107 +242,9 @@ class _PodcastPlayerScreenState extends State<PodcastPlayerScreen>
       ),
       centerTitle: true,
       backgroundColor: podcastColor.withOpacity(0.3),
-    );
-  }
-
-  Widget _buildLoadingIndicator() {
-    return const Center(
-      child: CircularProgressIndicator(
-        color: Colors.white,
-      ),
-    );
-  }
-
-  Widget _buildErrorWidget() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.error_outline, size: 48, color: Colors.red[300]),
-            const SizedBox(height: 16),
-            Text(
-              _errorMessage!,
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.red),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPlayerWidget(Color podcastColor) {
-    return SafeArea(
-      child: Stack(
-        children: [
-          SizedBox(
-            width: MediaQuery.of(context).size.width,
-            height: MediaQuery.of(context).size.height,
-            child: CachedNetworkImage(
-              imageUrl: widget.podcast.thumbnailUrl,
-              fit: BoxFit.cover,
-              placeholder: (context, url) => Stack(
-                children: [
-                  Container(
-                    height: 300,
-                    width: 300,
-                    color: Colors.grey[900],
-                    child: const Center(
-                      child: CircularProgressIndicator(
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          Container(
-            width: MediaQuery.of(context).size.width,
-            height: MediaQuery.of(context).size.height,
-            color: podcastColor.withOpacity(0.8),
-          ),
-          Column(
-            children: [
-              SizedBox(height: 50.h),
-              _buildHeader(),
-              _buildPodcastImage(),
-              _buildPodcastInfo(),
-              SizedBox(height: 50.h),
-              Expanded(
-                child: Stack(
-                  children: [
-                    Align(
-                      alignment: Alignment.bottomCenter,
-                      child: Container(
-                        width: MediaQuery.of(context)
-                            .size
-                            .width, // Optional: adjust width
-                        height: 120.h,
-                        decoration: const BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(20.0),
-                            topRight: Radius.circular(20.0),
-                          ),
-                        ),
-                      ),
-                    ),
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        _buildProgressBar(podcastColor),
-                        _buildControlButtons(podcastColor),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ],
+      leading: IconButton(
+        icon: const Icon(Icons.keyboard_arrow_down),
+        onPressed: _navigateToNavigationBar,
       ),
     );
   }
@@ -471,7 +354,7 @@ class _PodcastPlayerScreenState extends State<PodcastPlayerScreen>
     );
   }
 
-  Widget _buildProgressBar(Color podcastcolor) {
+  Widget _buildProgressBar(Color podcastColor) {
     return Column(
       children: [
         Padding(
@@ -481,16 +364,17 @@ class _PodcastPlayerScreenState extends State<PodcastPlayerScreen>
               trackHeight: 2,
               thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 4),
               overlayShape: const RoundSliderOverlayShape(overlayRadius: 8),
-              activeTrackColor: podcastcolor,
+              activeTrackColor: podcastColor,
               inactiveTrackColor: Colors.black54,
-              thumbColor: podcastcolor,
+              thumbColor: podcastColor,
               overlayColor: Colors.black54,
             ),
             child: Slider(
               value: _position.inSeconds.toDouble(),
               min: 0,
               max: _duration.inSeconds.toDouble(),
-              onChanged: (value) => _seekTo(Duration(seconds: value.toInt())),
+              onChanged: (value) =>
+                  audioPlayer.seek(Duration(seconds: value.toInt())),
             ),
           ),
         ),
@@ -520,7 +404,7 @@ class _PodcastPlayerScreenState extends State<PodcastPlayerScreen>
     );
   }
 
-  Widget _buildControlButtons(Color podcastcolor) {
+  Widget _buildControlButtons(Color podcastColor) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 35),
       child: Row(
@@ -528,23 +412,23 @@ class _PodcastPlayerScreenState extends State<PodcastPlayerScreen>
         children: [
           IconButton(
             icon: const Icon(Icons.shuffle),
-            color: podcastcolor,
+            color: podcastColor,
             iconSize: 24,
             onPressed: () {},
           ),
           IconButton(
             icon: const Icon(Icons.skip_previous),
-            color: podcastcolor,
+            color: podcastColor,
             iconSize: 40,
             onPressed: () {},
           ),
           Container(
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: podcastcolor,
+              color: podcastColor,
               boxShadow: [
                 BoxShadow(
-                  color: podcastcolor.withOpacity(0.2),
+                  color: podcastColor.withOpacity(0.2),
                   blurRadius: 10,
                   spreadRadius: 2,
                 ),
@@ -559,13 +443,13 @@ class _PodcastPlayerScreenState extends State<PodcastPlayerScreen>
           ),
           IconButton(
             icon: const Icon(Icons.skip_next),
-            color: podcastcolor,
+            color: podcastColor,
             iconSize: 40,
             onPressed: () {},
           ),
           IconButton(
             icon: const Icon(Icons.repeat),
-            color: podcastcolor,
+            color: podcastColor,
             iconSize: 24,
             onPressed: () {},
           ),

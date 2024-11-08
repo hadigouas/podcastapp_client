@@ -74,7 +74,6 @@ class PodcastListWidget extends StatelessWidget {
                       context,
                       MaterialPageRoute(
                         builder: (context) => PodcastPlayerScreen(
-                          audioPlayer: null,
                           podcast: podcasts[index],
                         ),
                       ),
@@ -104,7 +103,6 @@ class PodcastListWidget extends StatelessWidget {
                       context,
                       MaterialPageRoute(
                         builder: (context) => PodcastPlayerScreen(
-                          audioPlayer: null,
                           podcast: shuffledList[index],
                         ),
                       ),
@@ -126,7 +124,6 @@ class PodcastListWidget extends StatelessWidget {
                     context,
                     MaterialPageRoute(
                       builder: (context) => PodcastPlayerScreen(
-                        audioPlayer: null,
                         podcast: podcasts[index],
                       ),
                     ),

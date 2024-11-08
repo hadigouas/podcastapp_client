@@ -9,14 +9,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:just_audio/just_audio.dart';
 
+import 'audio_player_service.dart'; // Import the service locator setup
+
 class MyNavigationBar extends StatefulWidget {
   const MyNavigationBar({
     super.key,
-    required this.audioPlayer,
     required this.podcast,
   });
 
-  final AudioPlayer? audioPlayer;
   final Podcast? podcast;
 
   @override
@@ -25,6 +25,8 @@ class MyNavigationBar extends StatefulWidget {
 
 class _MyNavigationBarState extends State<MyNavigationBar> {
   int _selectedIndex = 0;
+  final AudioPlayer audioPlayer =
+      getIt<AudioPlayer>(); // Get singleton instance
 
   void _onItemTapped(int index) {
     setState(() {
@@ -61,7 +63,6 @@ class _MyNavigationBarState extends State<MyNavigationBar> {
                   children: [
                     if (widget.podcast != null)
                       MiniPlayer(
-                        audioPlayer: widget.audioPlayer,
                         podcast: widget.podcast!,
                       ),
                     const SizedBox(height: 8),

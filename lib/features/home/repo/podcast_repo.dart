@@ -3,6 +3,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_application_3/core/classes/shared_pref.dart';
 import 'package:flutter_application_3/core/constent/api_consts.dart';
 import 'package:flutter_application_3/core/errors/errors.dart';
+import 'package:flutter_application_3/features/home/models/favorite_model.dart';
 import 'package:flutter_application_3/features/home/models/podcast_model.dart';
 import 'package:http_parser/http_parser.dart';
 
@@ -10,10 +11,8 @@ abstract class PodcastRepo {
   Future<Either<ServerFailure, List<Podcast>>> getAllPodcasts();
   Future<Either<ServerFailure, String>> addPodcast(String name, String author,
       String audioPath, String thumbnailPath, String color);
-  Future<Either<ServerFailure, String>> updatePodcast(String id, String name,
-      String author, String audioPath, String thumbnailPath, String color);
-  Future<Either<ServerFailure, String>> deletePodcast(String podcastId);
-  Future<Either<ServerFailure, Podcast>> getPodcastById(String podcastId);
+  Future<Either<ServerFailure, List<Favorite>>> getFavorite();
+  Future<Either<ServerFailure, bool>> addFavorite(String podcastId);
 }
 
 class PodcastImpl implements PodcastRepo {
@@ -86,74 +85,40 @@ class PodcastImpl implements PodcastRepo {
   }
 
   @override
-  Future<Either<ServerFailure, String>> updatePodcast(
-      String id,
-      String name,
-      String author,
-      String audioPath,
-      String thumbnailPath,
-      String color) async {
+  Future<Either<ServerFailure, bool>> addFavorite(String podcastId) async {
     try {
-      var formData = FormData.fromMap({
-        'podcastname': name,
-        'author': author,
-        'color': color,
-        if (thumbnailPath.isNotEmpty)
-          'thumbnail': await MultipartFile.fromFile(thumbnailPath,
-              contentType: MediaType('image', 'jpeg')),
-        if (audioPath.isNotEmpty)
-          'audio': await MultipartFile.fromFile(audioPath,
-              contentType: MediaType('audio', 'mpeg')),
-      });
-
-      final response = await dio.put('podcast/$id', data: formData);
-
+      final response =
+          await dio.post("/favorite", data: {"podcast_id": podcastId});
       if (response.statusCode == 200) {
-        return const Right('Podcast updated successfully');
+        final isFavorite = response.data['message'] as bool;
+        return Right(isFavorite);
       } else {
         return Left(
-            ServerFailure('Failed to update podcast: ${response.statusCode}'));
+            ServerFailure('Failed to add favorite: ${response.statusCode}'));
       }
     } on DioException catch (e) {
       return Left(ServerFailure.fromDioError(e));
     } catch (e) {
-      return Left(ServerFailure('Failed to update podcast: ${e.toString()}'));
+      return Left(ServerFailure('Failed to add favorite: ${e.toString()}'));
     }
   }
 
   @override
-  Future<Either<ServerFailure, String>> deletePodcast(String podcastId) async {
+  Future<Either<ServerFailure, List<Favorite>>> getFavorite() async {
     try {
-      final response = await dio.delete('podcast/$podcastId');
+      final response = await dio.get("/favorite/list");
       if (response.statusCode == 200) {
-        return const Right('Podcast deleted successfully');
+        final List<dynamic> data = response.data;
+        final favorites = data.map((json) => Favorite.fromJson(json)).toList();
+        return Right(favorites);
       } else {
         return Left(
-            ServerFailure('Failed to delete podcast: ${response.statusCode}'));
+            ServerFailure('Failed to get favorites: ${response.statusCode}'));
       }
     } on DioException catch (e) {
       return Left(ServerFailure.fromDioError(e));
     } catch (e) {
-      return Left(ServerFailure('Failed to delete podcast: ${e.toString()}'));
-    }
-  }
-
-  @override
-  Future<Either<ServerFailure, Podcast>> getPodcastById(
-      String podcastId) async {
-    // Implementation remains the same
-    try {
-      final response = await dio.get('podcast/$podcastId');
-      if (response.statusCode == 200) {
-        final podcast = Podcast.fromJson(response.data);
-        return Right(podcast);
-      } else {
-        return Left(ServerFailure('Podcast not found: ${response.statusCode}'));
-      }
-    } on DioException catch (e) {
-      return Left(ServerFailure.fromDioError(e));
-    } catch (e) {
-      return Left(ServerFailure('Failed to get podcast: ${e.toString()}'));
+      return Left(ServerFailure('Failed to get favorites: ${e.toString()}'));
     }
   }
 }

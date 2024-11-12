@@ -1,4 +1,5 @@
 import 'package:flutter_application_3/features/home/cubit/podcast_state.dart';
+import 'package:flutter_application_3/features/home/models/favorite_model.dart';
 import 'package:flutter_application_3/features/home/models/podcast_model.dart';
 import 'package:flutter_application_3/features/home/repo/podcast_repo.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -7,7 +8,9 @@ import 'package:just_audio/just_audio.dart';
 class PodcastCubit extends Cubit<PodcastState> {
   final PodcastRepo _podcastRepo;
   List<Podcast> _allPodcasts = [];
+  List<Favorite> _favoritePodcasts = [];
   bool isActive = false;
+
   PodcastCubit(this._podcastRepo) : super(PodcastInitial());
 
   Future<void> addPodcast(String name, String author, String audioPath,
@@ -41,6 +44,42 @@ class PodcastCubit extends Cubit<PodcastState> {
     }
   }
 
+  Future<void> toggleFavorite(String podcastId) async {
+    try {
+      emit(PodcastLoading());
+      final result = await _podcastRepo.addFavorite(podcastId);
+      result.fold(
+        (error) => emit(PodcastFailed(errorMessage: error.message)),
+        (isFavorited) {
+          if (isFavorited) {
+            emit(FavoriteAdded());
+          } else {
+            emit(FavoriteRemoved());
+          }
+          getFavorites(); // Refresh the favorite list after toggling
+        },
+      );
+    } catch (e) {
+      emit(PodcastFailed(errorMessage: e.toString()));
+    }
+  }
+
+  Future<void> getFavorites() async {
+    try {
+      emit(PodcastLoading());
+      final result = await _podcastRepo.getFavorite();
+      result.fold(
+        (error) => emit(PodcastFailed(errorMessage: error.message)),
+        (favoriteList) {
+          _favoritePodcasts = favoriteList;
+          emit(FavoriteList(_favoritePodcasts));
+        },
+      );
+    } catch (e) {
+      emit(PodcastFailed(errorMessage: e.toString()));
+    }
+  }
+
   void searchPodcasts(String query) {
     if (query.isEmpty) {
       emit(PodcastList(
@@ -55,47 +94,6 @@ class PodcastCubit extends Cubit<PodcastState> {
     }
   }
 
-  Future<void> updatePodcast(String id, String name, String author,
-      String audioPath, String thumbnailPath, String color) async {
-    try {
-      emit(PodcastLoading());
-      final result = await _podcastRepo.updatePodcast(
-          id, name, author, audioPath, thumbnailPath, color);
-
-      result.fold(
-        (error) => emit(PodcastFailed(errorMessage: error.message)),
-        (successMessage) => emit(PodcastSuccess(successMessage)),
-      );
-    } catch (e) {
-      emit(PodcastFailed(errorMessage: e.toString()));
-    }
-  }
-
-  Future<void> deletePodcast(String podcastId) async {
-    try {
-      emit(PodcastLoading());
-      final result = await _podcastRepo.deletePodcast(podcastId);
-      result.fold(
-        (error) => emit(PodcastFailed(errorMessage: error.message)),
-        (successMessage) => emit(PodcastSuccess(successMessage)),
-      );
-    } catch (e) {
-      emit(PodcastFailed(errorMessage: e.toString()));
-    }
-  }
-
-  // Future<void> getPodcastById(String podcastId) async {
-  //   try {
-  //     emit(PodcastLoading());
-  //     final result = await _podcastRepo.getPodcastById(podcastId);
-  //     result.fold(
-  //       (error) => emit(PodcastFailed(errorMessage: error.message)),
-  //       (podcast) => emit(PodcastDetailSuccess(podcast)),
-  //     );
-  //   } catch (e) {
-  //     emit(PodcastFailed(errorMessage: e.toString()));
-  //   }
-  // }
   void toggleSclabbar(AudioPlayer audioPlayer, Podcast podcast) {
     isActive = !isActive;
     emit(SclabBar(

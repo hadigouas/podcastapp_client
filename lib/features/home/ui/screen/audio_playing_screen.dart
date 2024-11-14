@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_3/audio_player_service.dart';
 import 'package:flutter_application_3/core/theme/textstyle.dart';
 import 'package:flutter_application_3/features/home/models/podcast_model.dart';
+import 'package:flutter_application_3/features/home/ui/widget/favorite_button.dart';
 import 'package:flutter_application_3/navigation_bar.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:just_audio/just_audio.dart';
@@ -28,7 +29,6 @@ class _PodcastPlayerScreenState extends State<PodcastPlayerScreen>
   Duration _duration = Duration.zero;
   bool _isPlaying = false;
   bool _isInitialized = false;
-  bool _isFavorite = false;
   late AnimationController _favoriteController;
 
   @override
@@ -268,17 +268,7 @@ class _PodcastPlayerScreenState extends State<PodcastPlayerScreen>
               letterSpacing: 1.5,
             ),
           ),
-          IconButton(
-            icon: Icon(
-              _isFavorite ? Icons.favorite : Icons.favorite_border,
-              color: _isFavorite ? Colors.greenAccent : Colors.white,
-            ),
-            onPressed: () {
-              setState(() {
-                _isFavorite = !_isFavorite;
-              });
-            },
-          ),
+          FavoriteButton(podcast: widget.podcast)
         ],
       ),
     );

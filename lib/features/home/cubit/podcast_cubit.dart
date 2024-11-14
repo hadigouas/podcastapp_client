@@ -1,5 +1,4 @@
 import 'package:flutter_application_3/features/home/cubit/podcast_state.dart';
-import 'package:flutter_application_3/features/home/models/favorite_model.dart';
 import 'package:flutter_application_3/features/home/models/podcast_model.dart';
 import 'package:flutter_application_3/features/home/repo/podcast_repo.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -8,7 +7,6 @@ import 'package:just_audio/just_audio.dart';
 class PodcastCubit extends Cubit<PodcastState> {
   final PodcastRepo _podcastRepo;
   List<Podcast> _allPodcasts = [];
-  List<Favorite> _favoritePodcasts = [];
   bool isActive = false;
 
   PodcastCubit(this._podcastRepo) : super(PodcastInitial());
@@ -46,38 +44,20 @@ class PodcastCubit extends Cubit<PodcastState> {
 
   Future<void> toggleFavorite(String podcastId) async {
     try {
-      emit(PodcastLoading());
-      final result = await _podcastRepo.addFavorite(podcastId);
-      result.fold(
-        (error) => emit(PodcastFailed(errorMessage: error.message)),
-        (isFavorited) {
-          if (isFavorited) {
-            emit(FavoriteAdded());
-          } else {
-            emit(FavoriteRemoved());
-          }
-          getFavorites(); // Refresh the favorite list after toggling
-        },
-      );
+      await _podcastRepo.addFavorite(podcastId);
     } catch (e) {
       emit(PodcastFailed(errorMessage: e.toString()));
     }
   }
 
   Future<void> getFavorites() async {
-    try {
-      emit(PodcastLoading());
-      final result = await _podcastRepo.getFavorite();
-      result.fold(
-        (error) => emit(PodcastFailed(errorMessage: error.message)),
-        (favoriteList) {
-          _favoritePodcasts = favoriteList;
-          emit(FavoriteList(_favoritePodcasts));
-        },
-      );
-    } catch (e) {
-      emit(PodcastFailed(errorMessage: e.toString()));
-    }
+    final result = await _podcastRepo.getFavorite();
+    result.fold(
+      (failure) => emit(PodcastFailed(errorMessage: failure.message)),
+      (favoriteList) {
+        emit(FavoriteList(favoriteList));
+      },
+    );
   }
 
   void searchPodcasts(String query) {

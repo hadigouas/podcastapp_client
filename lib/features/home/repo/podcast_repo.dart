@@ -88,7 +88,7 @@ class PodcastImpl implements PodcastRepo {
   Future<Either<ServerFailure, bool>> addFavorite(String podcastId) async {
     try {
       final response =
-          await dio.post("/favorite", data: {"podcast_id": podcastId});
+          await dio.post("/podcast/favorite", data: {"podcast_id": podcastId});
       if (response.statusCode == 200) {
         final isFavorite = response.data['message'] as bool;
         return Right(isFavorite);
@@ -106,7 +106,7 @@ class PodcastImpl implements PodcastRepo {
   @override
   Future<Either<ServerFailure, List<Favorite>>> getFavorite() async {
     try {
-      final response = await dio.get("/favorite/list");
+      final response = await dio.get("/podcast/favorite/list");
       if (response.statusCode == 200) {
         final List<dynamic> data = response.data;
         final favorites = data.map((json) => Favorite.fromJson(json)).toList();

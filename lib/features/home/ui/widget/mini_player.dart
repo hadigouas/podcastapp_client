@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_3/features/home/models/podcast_model.dart';
+import 'package:flutter_application_3/features/home/ui/widget/favorite_button.dart';
 import 'package:get_it/get_it.dart';
 import 'package:just_audio/just_audio.dart';
 
@@ -116,13 +117,7 @@ class MiniPlayer extends StatelessWidget {
                   );
                 },
               ),
-              IconButton(
-                icon: const Icon(Icons.favorite_border,
-                    color: Colors.white, size: 24),
-                onPressed: () {
-                  // Handle favorite toggle
-                },
-              ),
+              FavoriteButton(podcast: podcast)
             ],
           ),
         ],

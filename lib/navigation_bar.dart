@@ -3,6 +3,7 @@ import 'package:flutter_application_3/core/theme/colors.dart';
 import 'package:flutter_application_3/features/auth/cubit/cubit/user_auth_cubit.dart';
 import 'package:flutter_application_3/features/auth/model/user_auth_modules.dart';
 import 'package:flutter_application_3/features/home/models/podcast_model.dart';
+import 'package:flutter_application_3/features/home/ui/screen/favorite_screen.dart';
 import 'package:flutter_application_3/features/home/ui/screen/homepage.dart';
 import 'package:flutter_application_3/features/home/ui/widget/mini_player.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -47,8 +48,7 @@ class _MyNavigationBarState extends State<MyNavigationBar> {
 
           final List<Widget> pages = <Widget>[
             MyHomePage(user: user!), // Pass the user to MyHomePage
-            const Center(
-                child: Text('Library Screen', style: TextStyle(fontSize: 24))),
+            const FavoriteScreen()
           ];
 
           return Stack(

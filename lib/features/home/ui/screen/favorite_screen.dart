@@ -5,6 +5,7 @@ import 'package:flutter_application_3/core/theme/textstyle.dart';
 import 'package:flutter_application_3/features/home/cubit/podcast_cubit.dart';
 import 'package:flutter_application_3/features/home/cubit/podcast_state.dart';
 import 'package:flutter_application_3/features/home/ui/screen/audio_playing_screen.dart';
+import 'package:flutter_application_3/features/home/ui/screen/upload_podcast.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -28,6 +29,20 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.darkBackgroundColor,
         centerTitle: true,
+        actions: [
+          TextButton(
+              onPressed: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const UploadPodcast(),
+                    ));
+              },
+              child: Text(
+                'add podcasts',
+                style: AppTextStyles.darkBodyText2,
+              ))
+        ],
         title: Text(
           'Favorite',
           style: AppTextStyles.darkHeadline2,

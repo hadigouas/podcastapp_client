@@ -127,7 +127,7 @@ class _SignupScreenState extends State<SignupScreen> {
                             text: "Already have an account?",
                             style: AppTextStyles.darkBodyText1),
                         TextSpan(
-                            text: " Sign up",
+                            text: " Login",
                             style: GoogleFonts.roboto(
                               fontSize: 22.sp,
                               fontWeight: FontWeight.bold,

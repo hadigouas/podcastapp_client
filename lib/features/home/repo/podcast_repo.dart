@@ -20,8 +20,8 @@ class PodcastImpl implements PodcastRepo {
   final token = SharedPrefs.getString("auth_token");
   PodcastImpl({required this.dio}) {
     dio.options.baseUrl = ApiConsts.base_url;
-    dio.options.connectTimeout = const Duration(seconds: 10);
-    dio.options.receiveTimeout = const Duration(seconds: 10);
+    dio.options.connectTimeout = const Duration(seconds: 20);
+    dio.options.receiveTimeout = const Duration(seconds: 20);
     dio.options.headers = {
       'Content-Type': 'application/json',
       'Accept': 'application/json',

@@ -72,7 +72,7 @@ class _SinginScreenState extends State<SinginScreen> {
                         height: 150.h,
                       ),
                       Text(
-                        'Sign in',
+                        'login',
                         style: AppTextStyles.darkHeadline1,
                       ),
                       SizedBox(
@@ -117,7 +117,7 @@ class _SinginScreenState extends State<SinginScreen> {
                             text: "Already have an account?",
                             style: AppTextStyles.darkBodyText1),
                         TextSpan(
-                            text: " Sign in",
+                            text: " Signup",
                             style: GoogleFonts.roboto(
                               fontSize: 22.sp,
                               fontWeight: FontWeight.bold,

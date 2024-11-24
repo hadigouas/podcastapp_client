@@ -50,6 +50,7 @@ class UserAuthCubit extends Cubit<UserAuthState> {
           emit(UserAuthFailed(failure.message));
         },
         (user) {
+          print('done');
           emit(UserAuthSuccess(user));
         },
       );

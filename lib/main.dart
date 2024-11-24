@@ -79,7 +79,6 @@ class MyApp extends StatelessWidget {
                             )),
                   );
                 } else if (state is UserAuthFailed) {
-                  // Navigate to SignupScreen if authentication fails
                   Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
@@ -87,8 +86,7 @@ class MyApp extends StatelessWidget {
                   );
                 }
               },
-              child: const Center(
-                  child: CircularProgressIndicator()) // Initial loading state
+              child: const SignupScreen() // Initial loading state
 
               ),
         );

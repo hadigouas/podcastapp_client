@@ -93,7 +93,7 @@ class AuthImpl implements AuthRepo {
           options: Options(headers: {
             "x-auth": token,
           }));
-
+      print(token);
       return Right(User.fromMap(response.data).copyWith(token: token));
     } catch (e) {
       return left(ServerFailure(e.toString()));

@@ -40,20 +40,24 @@ class UserAuthCubit extends Cubit<UserAuthState> {
   }
 
   Future<void> fetchAndHandleUserData() async {
+    emit(UserAuthIsLoading()); // Explicitly emit the loading state at the start
     final token = SharedPrefs.getString("auth_token");
+    print('Token fetched: $token');
 
     if (token.isNotEmpty) {
-      final result = await _authRepo.getuserdata(token);
-
-      result.fold(
-        (failure) {
-          emit(UserAuthFailed(failure.message));
-        },
-        (user) {
-          print('done');
-          emit(UserAuthSuccess(user));
-        },
-      );
+      try {
+        final result = await _authRepo.getuserdata(token);
+        result.fold(
+          (failure) {
+            emit(UserAuthFailed(failure.message));
+          },
+          (user) {
+            emit(UserAuthSuccess(user));
+          },
+        );
+      } catch (e) {
+        emit(const UserAuthFailed("An unexpected error occurred"));
+      }
     } else {
       emit(const UserAuthFailed("Token not found"));
     }

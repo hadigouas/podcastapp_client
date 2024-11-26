@@ -26,8 +26,7 @@ class MyNavigationBar extends StatefulWidget {
 
 class _MyNavigationBarState extends State<MyNavigationBar> {
   int _selectedIndex = 0;
-  final AudioPlayer audioPlayer =
-      getIt<AudioPlayer>(); // Get singleton instance
+  final AudioPlayer audioPlayer = getIt<AudioPlayer>();
 
   void _onItemTapped(int index) {
     setState(() {
@@ -47,7 +46,7 @@ class _MyNavigationBarState extends State<MyNavigationBar> {
           }
 
           final List<Widget> pages = <Widget>[
-            MyHomePage(user: user!), // Pass the user to MyHomePage
+            MyHomePage(user: user!),
             const FavoriteScreen()
           ];
 

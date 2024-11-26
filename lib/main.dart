@@ -21,8 +21,7 @@ void main() async {
     androidNotificationChannelName: 'Audio playback',
     androidNotificationOngoing: true,
     androidShowNotificationBadge: true,
-    androidStopForegroundOnPause:
-        true, // Optional: set to false if you want notification to stay when paused
+    androidStopForegroundOnPause: true,
   );
   await SharedPrefs.init();
 
@@ -47,8 +46,21 @@ void main() async {
   );
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      BlocProvider.of<UserAuthCubit>(context).fetchAndHandleUserData();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -68,27 +80,25 @@ class MyApp extends StatelessWidget {
             scaffoldBackgroundColor: AppColors.darkBackgroundColor,
           ),
           themeMode: ThemeMode.dark,
-          home: BlocListener<UserAuthCubit, UserAuthState>(
-              listener: (context, state) {
-                if (state is UserAuthSuccess) {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const MyNavigationBar(
-                              podcast: null,
-                            )),
-                  );
-                } else if (state is UserAuthFailed) {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const SignupScreen()),
-                  );
-                }
-              },
-              child: const SignupScreen() // Initial loading state
-
-              ),
+          home: BlocBuilder<UserAuthCubit, UserAuthState>(
+            builder: (context, state) {
+              if (state is UserAuthIsLoading) {
+                return const Center(
+                  child: CircularProgressIndicator(),
+                );
+              } else if (state is UserAuthSuccess) {
+                return const MyNavigationBar(
+                  podcast: null,
+                );
+              } else if (state is UserAuthFailed) {
+                return const SignupScreen();
+              } else {
+                return const Center(
+                  child: CircularProgressIndicator(),
+                );
+              }
+            },
+          ),
         );
       },
     );

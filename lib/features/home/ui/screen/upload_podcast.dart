@@ -80,7 +80,6 @@ class _UploadPodcastState extends State<UploadPodcast> {
     return BlocListener<PodcastCubit, PodcastState>(
       listener: (context, state) {
         if (state is PodcastSuccess) {
-          print("done");
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Podcast uploaded successfully!'),
@@ -88,7 +87,7 @@ class _UploadPodcastState extends State<UploadPodcast> {
             ),
           );
         } else if (state is PodcastFailed) {
-          print("no");
+          print(state.errorMessage);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Failed to upload podcast: ${state.errorMessage}'),

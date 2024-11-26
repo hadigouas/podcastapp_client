@@ -17,6 +17,7 @@ class PodcastCubit extends Cubit<PodcastState> {
       emit(PodcastLoading());
       final result = await _podcastRepo.addPodcast(
           name, author, audioPath, thumbnailPath, color);
+      print(result);
       result.fold(
         (error) => emit(PodcastFailed(errorMessage: error.message)),
         (successMessage) => emit(PodcastSuccess(successMessage)),

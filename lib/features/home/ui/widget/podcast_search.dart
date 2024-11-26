@@ -45,22 +45,24 @@ class PodcastSearchResultsWidget extends StatelessWidget {
                   errorWidget: (context, url, error) => const Icon(Icons.error),
                 ),
                 const SizedBox(width: 8),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      searchResults[index].name,
-                      style: AppTextStyles.darkBodyText1,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    Text(
-                      searchResults[index].author,
-                      style: AppTextStyles.darkBodyText2,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
+                Flexible(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        searchResults[index].name,
+                        style: AppTextStyles.darkBodyText1,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      Text(
+                        searchResults[index].author,
+                        style: AppTextStyles.darkBodyText2,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),

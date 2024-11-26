@@ -86,22 +86,24 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                               ),
                             ),
                             const SizedBox(width: 8),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  state.favorites[index].podcast.name,
-                                  style: AppTextStyles.darkBodyText1,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                Text(
-                                  state.favorites[index].podcast.author,
-                                  style: AppTextStyles.darkBodyText2,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ],
+                            Flexible(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    state.favorites[index].podcast.name,
+                                    style: AppTextStyles.darkBodyText1,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  Text(
+                                    state.favorites[index].podcast.author,
+                                    style: AppTextStyles.darkBodyText2,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              ),
                             ),
                           ],
                         ),
@@ -117,7 +119,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
               ),
             );
           } else {
-            return const CircularProgressIndicator();
+            return const Center(child: CircularProgressIndicator());
           }
         },
       ),

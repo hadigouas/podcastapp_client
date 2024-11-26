@@ -23,52 +23,104 @@ class PodcastListWidget extends StatelessWidget {
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(8.0),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Good Evening",
-                    style: AppTextStyles.darkBodyText2,
-                  ),
-                  const SizedBox(height: 5),
-                  Text(
-                    user.name!,
-                    style: AppTextStyles.darkHeadline2,
-                  ),
-                ],
-              ),
-              const CircleAvatar(
-                radius: 30,
-                child: Center(
-                  child: Icon(
-                    Icons.person,
-                    size: 30,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 40),
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Good Evening",
+                      style: AppTextStyles.darkBodyText2,
+                    ),
+                    const SizedBox(height: 5),
+                    Text(
+                      user.name!,
+                      style: AppTextStyles.darkHeadline2,
+                    ),
+                  ],
+                ),
+                const CircleAvatar(
+                  radius: 30,
+                  child: Center(
+                    child: Icon(
+                      Icons.person,
+                      size: 30,
+                    ),
                   ),
                 ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Text(
+              "Latest update",
+              style: AppTextStyles.darkHeadline1,
+            ),
+            const SizedBox(height: 10),
+            SizedBox(
+              height: 160.h,
+              width: MediaQuery.of(context).size.width,
+              child: ListView.builder(
+                itemCount: 3,
+                scrollDirection: Axis.horizontal,
+                itemBuilder: (context, index) {
+                  return buildPodcastCard(
+                    context,
+                    podcasts[index],
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => PodcastPlayerScreen(
+                            podcast: podcasts[index],
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                },
               ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Text(
-            "Latest update",
-            style: AppTextStyles.darkHeadline1,
-          ),
-          const SizedBox(height: 10),
-          SizedBox(
-            height: 160.h,
-            width: MediaQuery.of(context).size.width,
-            child: ListView.builder(
-              itemCount: 5,
-              scrollDirection: Axis.horizontal,
+            ),
+            const SizedBox(height: 10),
+            Text(
+              "Recommended for you",
+              style: AppTextStyles.darkHeadline2,
+            ),
+            SizedBox(
+              height: 160.h,
+              width: MediaQuery.of(context).size.width,
+              child: ListView.builder(
+                itemCount: 3,
+                scrollDirection: Axis.horizontal,
+                itemBuilder: (context, index) {
+                  return buildPodcastCard(
+                    context,
+                    shuffledList[index],
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => PodcastPlayerScreen(
+                            podcast: shuffledList[index],
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 10),
+            ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: podcasts.length,
               itemBuilder: (context, index) {
-                return buildPodcastCard(
-                  context,
-                  podcasts[index],
+                return GestureDetector(
                   onTap: () {
                     Navigator.push(
                       context,
@@ -79,98 +131,51 @@ class PodcastListWidget extends StatelessWidget {
                       ),
                     );
                   },
-                );
-              },
-            ),
-          ),
-          const SizedBox(height: 10),
-          Text(
-            "Recommended for you",
-            style: AppTextStyles.darkHeadline2,
-          ),
-          SizedBox(
-            height: 160.h,
-            width: MediaQuery.of(context).size.width,
-            child: ListView.builder(
-              itemCount: 5,
-              scrollDirection: Axis.horizontal,
-              itemBuilder: (context, index) {
-                return buildPodcastCard(
-                  context,
-                  shuffledList[index],
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => PodcastPlayerScreen(
-                          podcast: shuffledList[index],
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Row(
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: CachedNetworkImage(
+                            imageUrl: podcasts[index].thumbnailUrl,
+                            width: 60.w,
+                            height: 60.h,
+                            fit: BoxFit.fill,
+                            placeholder: (context, url) =>
+                                const CircularProgressIndicator(),
+                            errorWidget: (context, url, error) =>
+                                const Icon(Icons.error),
+                          ),
                         ),
-                      ),
-                    );
-                  },
-                );
-              },
-            ),
-          ),
-          const SizedBox(height: 10),
-          ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: podcasts.length,
-            itemBuilder: (context, index) {
-              return GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => PodcastPlayerScreen(
-                        podcast: podcasts[index],
-                      ),
+                        const SizedBox(width: 8),
+                        Flexible(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                podcasts[index].name,
+                                style: AppTextStyles.darkBodyText1,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              Text(
+                                podcasts[index].author,
+                                style: AppTextStyles.darkBodyText2,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                  );
-                },
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Row(
-                    children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: CachedNetworkImage(
-                          imageUrl: podcasts[index].thumbnailUrl,
-                          width: 60.w,
-                          height: 60.h,
-                          fit: BoxFit.fill,
-                          placeholder: (context, url) =>
-                              const CircularProgressIndicator(),
-                          errorWidget: (context, url, error) =>
-                              const Icon(Icons.error),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            podcasts[index].name,
-                            style: AppTextStyles.darkBodyText1,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          Text(
-                            podcasts[index].author,
-                            style: AppTextStyles.darkBodyText2,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                      ),
-                    ],
                   ),
-                ),
-              );
-            },
-          ),
-        ],
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }

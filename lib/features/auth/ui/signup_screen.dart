@@ -6,7 +6,7 @@ import 'package:flutter_application_3/core/widgets/mainbutton.dart';
 import 'package:flutter_application_3/features/auth/cubit/cubit/user_auth_cubit.dart';
 import 'package:flutter_application_3/features/auth/ui/login_screen.dart';
 import 'package:flutter_application_3/features/auth/ui/widget/textfield.dart';
-import 'package:flutter_application_3/features/home/ui/screen/upload_podcast.dart';
+import 'package:flutter_application_3/navigation_bar.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -55,7 +55,9 @@ class _SignupScreenState extends State<SignupScreen> {
               Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const UploadPodcast(),
+                    builder: (context) => const MyNavigationBar(
+                      podcast: null,
+                    ),
                   ));
             } else if (state is UserAuthFailed) {
               print(state.errormessage);

@@ -18,16 +18,19 @@ class _FavoriteButtonState extends State<FavoriteButton> {
   Widget build(BuildContext context) {
     return BlocBuilder<PodcastCubit, PodcastState>(
       builder: (context, state) {
-        final isFavorite =
-            state is FavoriteList && state.favorites.contains(widget.podcast);
+        final isFavorite = widget.podcast.isfavorit;
+
         return IconButton(
           icon: Icon(
             isFavorite ? Icons.favorite : Icons.favorite_border,
-            color: isFavorite ? Colors.greenAccent : Colors.white,
+            color: isFavorite ? Colors.red : Colors.white,
           ),
           onPressed: () {
             BlocProvider.of<PodcastCubit>(context)
                 .toggleFavorite(widget.podcast.id);
+            setState(() {
+              widget.podcast.isfavorit = !widget.podcast.isfavorit;
+            });
           },
         );
       },

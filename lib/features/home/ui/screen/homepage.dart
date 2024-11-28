@@ -88,7 +88,7 @@ class _MyHomePageState extends State<MyHomePage> {
             Expanded(
               child: BlocBuilder<PodcastCubit, PodcastState>(
                 builder: (context, state) {
-                  if (state is PodcastList) {
+                  if (state is CombinedList) {
                     return PodcastListWidget(
                       podcasts: state.podcastList,
                       user: widget.user,

@@ -74,3 +74,26 @@ class FavoriteList extends PodcastState {
 class FavoriteAdded extends PodcastState {}
 
 class FavoriteRemoved extends PodcastState {}
+
+class CombinedList extends PodcastState {
+  final List<Podcast> podcastList;
+  final List<Favorite> favorites;
+
+  const CombinedList({
+    this.podcastList = const [],
+    this.favorites = const [],
+  });
+
+  CombinedList copyWith({
+    List<Podcast>? podcastList,
+    List<Favorite>? favorites,
+  }) {
+    return CombinedList(
+      podcastList: podcastList ?? this.podcastList,
+      favorites: favorites ?? this.favorites,
+    );
+  }
+
+  @override
+  List<Object> get props => [podcastList, favorites];
+}

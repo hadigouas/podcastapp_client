@@ -50,7 +50,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
       ),
       body: BlocBuilder<PodcastCubit, PodcastState>(
         builder: (context, state) {
-          if (state is FavoriteList) {
+          if (state is CombinedList) {
             return Padding(
               padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
               child: ListView.builder(
@@ -70,6 +70,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                           );
                         },
                         child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             ClipRRect(
                               borderRadius: BorderRadius.circular(12),
@@ -105,6 +106,17 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                                 ],
                               ),
                             ),
+                            IconButton(
+                                onPressed: () {
+                                  BlocProvider.of<PodcastCubit>(
+                                    context,
+                                  ).toggleFavorite(
+                                      state.favorites[index].podcast.id);
+                                },
+                                icon: const Icon(
+                                  Icons.delete,
+                                  color: Colors.red,
+                                ))
                           ],
                         ),
                       ),

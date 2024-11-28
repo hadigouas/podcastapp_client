@@ -6,7 +6,7 @@ import 'package:just_audio/just_audio.dart';
 
 class PodcastCubit extends Cubit<PodcastState> {
   final PodcastRepo _podcastRepo;
-  List<Podcast> _allPodcasts = [];
+  final List<Podcast> _allPodcasts = [];
   bool isActive = false;
 
   PodcastCubit(this._podcastRepo) : super(PodcastInitial());
@@ -31,11 +31,12 @@ class PodcastCubit extends Cubit<PodcastState> {
     try {
       emit(PodcastLoading());
       final result = await _podcastRepo.getAllPodcasts();
+      final currentfav = state as CombinedList;
       result.fold(
         (error) => emit(PodcastFailed(errorMessage: error.message)),
         (podcastList) {
-          _allPodcasts = podcastList;
-          emit(PodcastList(podcastList));
+          emit(const CombinedList().copyWith(
+              podcastList: podcastList, favorites: currentfav.favorites));
         },
       );
     } catch (e) {
@@ -46,6 +47,7 @@ class PodcastCubit extends Cubit<PodcastState> {
   Future<void> toggleFavorite(String podcastId) async {
     try {
       await _podcastRepo.addFavorite(podcastId);
+      getFavorites();
     } catch (e) {
       emit(PodcastFailed(errorMessage: e.toString()));
     }
@@ -53,10 +55,13 @@ class PodcastCubit extends Cubit<PodcastState> {
 
   Future<void> getFavorites() async {
     final result = await _podcastRepo.getFavorite();
+    final currentpodcastlist = state as CombinedList;
     result.fold(
       (failure) => emit(PodcastFailed(errorMessage: failure.message)),
       (favoriteList) {
-        emit(FavoriteList(favoriteList));
+        emit(const CombinedList().copyWith(
+            favorites: favoriteList,
+            podcastList: currentpodcastlist.podcastList));
       },
     );
   }

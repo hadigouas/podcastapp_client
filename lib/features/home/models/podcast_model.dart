@@ -5,6 +5,7 @@ class Podcast {
   final String audioUrl;
   final String thumbnailUrl;
   final String color;
+  bool isfavorit;
 
   Podcast({
     required this.id,
@@ -13,6 +14,7 @@ class Podcast {
     required this.audioUrl,
     required this.thumbnailUrl,
     required this.color,
+    this.isfavorit = false,
   });
 
   // Factory constructor to create a Podcast object from a JSON map
